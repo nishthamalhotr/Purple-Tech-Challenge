@@ -5,7 +5,7 @@
   "outputDirectory": "artifacts/dashboard/dist/public",
   "rewrites": [
     {
-      "source": "/((?!.*\\..*).*)",
+      "source": "/:path*",
       "destination": "/index.html"
     }
   ]
