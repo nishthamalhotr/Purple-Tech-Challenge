@@ -1,18 +1,12 @@
 {
-  "version": 3,  "buildCommand": "pnpm --filter @workspace/dashboard run build",
-  "installCommand": "pnpm install",  "builds": [
+  "version": 3,
+  "installCommand": "pnpm install",
+  "buildCommand": "pnpm --filter @workspace/dashboard run build",
+  "outputDirectory": "artifacts/dashboard/dist/public",
+  "rewrites": [
     {
-      "src": "package.json",
-      "use": "@vercel/static-build",
-      "config": {
-        "distDir": "artifacts/dashboard/dist/public"
-      }
-    }
-  ],
-  "routes": [
-    {
-      "src": "/(.*)",
-      "dest": "/"
+      "source": "/((?!.*\\..*).*)",
+      "destination": "/index.html"
     }
   ]
 }
