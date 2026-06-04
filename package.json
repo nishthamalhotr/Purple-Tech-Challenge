@@ -20,7 +20,8 @@
 
     "health": "curl http://localhost:8000/health",
 
-    "build": "pnpm run typecheck && pnpm -r --if-present run build",
+    "build": "pnpm --filter @workspace/dashboard run build",
+    "build:all": "pnpm run typecheck && pnpm -r --if-present run build",
     "vercel-build": "pnpm --filter @workspace/dashboard run build",
 
     "typecheck:libs": "tsc --build",
