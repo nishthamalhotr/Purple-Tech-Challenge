@@ -1,5 +1,5 @@
 {
-  "version": 3,
+  "version": 2,
   "installCommand": "pnpm install",
   "buildCommand": "pnpm --filter @workspace/dashboard run build",
   "outputDirectory": "artifacts/dashboard/dist/public",
