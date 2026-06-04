@@ -7,7 +7,7 @@
       "config": {
         "installCommand": "pnpm install",
         "buildCommand": "pnpm --filter @workspace/dashboard run build",
-        "distDir": "artifacts/dashboard/dist/public"
+        "distDir": "artifacts/dashboard/dist"
       }
     }
   ],
