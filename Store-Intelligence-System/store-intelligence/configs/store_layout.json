@@ -1,0 +1,75 @@
+{
+  "store_id": "store_001",
+  "name": "Purplle Store — Andheri West",
+  "camera_count": 3,
+  "cameras": [
+    {
+      "camera_id": "cam_entrance",
+      "location": "main_entrance",
+      "description": "Top-down view of entrance door",
+      "resolution": [1920, 1080],
+      "fps": 30
+    },
+    {
+      "camera_id": "cam_floor_north",
+      "location": "north_floor",
+      "description": "45-degree angled view of north floor sections",
+      "resolution": [1920, 1080],
+      "fps": 25
+    },
+    {
+      "camera_id": "cam_billing",
+      "location": "billing_counter",
+      "description": "Top-down view of billing queue",
+      "resolution": [1280, 720],
+      "fps": 15
+    }
+  ],
+  "tripwire": {
+    "camera_id": "cam_entrance",
+    "x1": 0.0,
+    "y1": 0.5,
+    "x2": 1.0,
+    "y2": 0.5,
+    "entry_side": "below",
+    "description": "Horizontal line at y=0.5. Above = outside, below = inside store."
+  },
+  "zones": [
+    {
+      "zone_id": "zone_entrance",
+      "name": "Entrance",
+      "x": 0.0, "y": 0.4, "w": 1.0, "h": 0.2
+    },
+    {
+      "zone_id": "zone_skincare",
+      "name": "Skincare",
+      "x": 0.0, "y": 0.6, "w": 0.35, "h": 0.2
+    },
+    {
+      "zone_id": "zone_makeup",
+      "name": "Makeup",
+      "x": 0.35, "y": 0.6, "w": 0.35, "h": 0.2
+    },
+    {
+      "zone_id": "zone_haircare",
+      "name": "Haircare",
+      "x": 0.70, "y": 0.6, "w": 0.3, "h": 0.2
+    },
+    {
+      "zone_id": "zone_fragrances",
+      "name": "Fragrances",
+      "x": 0.0, "y": 0.8, "w": 0.3, "h": 0.2
+    },
+    {
+      "zone_id": "zone_billing",
+      "name": "Billing Counter",
+      "x": 0.7, "y": 0.85, "w": 0.3, "h": 0.15
+    }
+  ],
+  "staff_config": {
+    "uniform_color": "blue",
+    "uniform_hue_range": [100, 130],
+    "known_staff_ids": [],
+    "min_dwell_hours_for_staff_flag": 2
+  }
+}

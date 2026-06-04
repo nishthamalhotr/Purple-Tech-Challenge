@@ -1,0 +1,20 @@
+FROM node:20-slim
+
+WORKDIR /app
+
+RUN corepack enable && corepack prepare pnpm@latest --activate
+
+COPY package.json pnpm-workspace.yaml pnpm-lock.yaml ./
+COPY artifacts/dashboard ./artifacts/dashboard
+COPY lib/api-client-react ./lib/api-client-react
+
+RUN pnpm install --frozen-lockfile
+
+WORKDIR /app/artifacts/dashboard
+ENV PORT=3000
+ENV BASE_PATH=/
+ENV VITE_API_URL=http://api:8000
+RUN pnpm run build
+
+EXPOSE 3000
+CMD ["pnpm", "run", "serve"]

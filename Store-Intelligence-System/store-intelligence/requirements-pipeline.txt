@@ -1,0 +1,7 @@
+# Optional pipeline dependencies for live camera ingestion and YOLO/ByteTrack detection
+ultralytics>=8.3.0
+opencv-python>=4.9.0
+numpy>=1.26.0
+torch>=2.0.0
+torchvision>=0.15.0
+torchreid>=1.4.0

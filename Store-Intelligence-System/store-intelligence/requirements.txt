@@ -1,0 +1,23 @@
+fastapi==0.115.0
+uvicorn[standard]==0.30.6
+sqlalchemy[asyncio]==2.0.35
+aiosqlite==0.20.0
+# asyncpg is only required for PostgreSQL deployments.
+# Install it via requirements-postgres.txt when using DATABASE_URL=postgresql+asyncpg://...
+# asyncpg==0.30.0
+pydantic==2.13.4
+httpx==0.27.2
+python-multipart==0.0.9
+
+# Detection pipeline (optional - install when running with real cameras)
+# ultralytics>=8.3.0      # YOLOv8 + ByteTrack
+# torchreid>=1.4.0        # OSNet re-identification
+# opencv-python>=4.9.0    # Video capture
+# torch>=2.0.0
+# torchvision>=0.15.0
+# numpy>=1.26.0
+
+# Testing
+pytest==8.3.3
+pytest-asyncio==0.24.0
+httpx==0.27.2

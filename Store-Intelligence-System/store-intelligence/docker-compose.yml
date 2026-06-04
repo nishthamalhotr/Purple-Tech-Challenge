@@ -1,0 +1,110 @@
+version: "3.9"
+
+# Store Intelligence System — Docker Compose
+# Run: docker compose up
+# API available at: http://localhost:8000
+# Dashboard available at: http://localhost:3000
+# Pipeline runs in mock mode by default and emits demo events into the API.
+#
+# For production: replace SQLite with PostgreSQL (set DATABASE_URL)
+
+services:
+  api:
+    build:
+      context: .
+      dockerfile: docker/Dockerfile.api
+    container_name: store_intelligence_api
+    ports:
+      - "8000:8000"
+    environment:
+      DATABASE_URL: "sqlite+aiosqlite:///./data/store_intelligence.db"
+      LOG_LEVEL: "info"
+    volumes:
+      - sqlite_data:/app/data
+    healthcheck:
+      test: ["CMD", "python", "-c", "import httpx; httpx.get('http://localhost:8000/health').raise_for_status()"]
+      interval: 30s
+      timeout: 10s
+      retries: 3
+      start_period: 10s
+    restart: unless-stopped
+
+  # Optional: PostgreSQL for production
+  # db:
+  #   image: postgres:16-alpine
+  #   container_name: store_intelligence_db
+  #   environment:
+  #     POSTGRES_USER: si_user
+  #     POSTGRES_PASSWORD: si_password
+  #     POSTGRES_DB: store_intelligence
+  #   volumes:
+  #     - pgdata:/var/lib/postgresql/data
+  #   ports:
+  #     - "5432:5432"
+  #   healthcheck:
+  #     test: ["CMD-SHELL", "pg_isready -U si_user -d store_intelligence"]
+  #     interval: 10s
+  #     timeout: 5s
+  #     retries: 5
+
+  # Seed data — runs once and exits
+  seed:
+    build:
+      context: .
+      dockerfile: docker/Dockerfile.api
+    container_name: store_intelligence_seed
+    depends_on:
+      api:
+        condition: service_healthy
+    environment:
+      API_BASE_URL: "http://api:8000"
+    volumes:
+      - ./scripts/seed_demo_data.py:/app/seed_demo_data.py
+    command: ["python", "/app/seed_demo_data.py"]
+    restart: "no"
+
+  pipeline:
+    build:
+      context: .
+      dockerfile: docker/Dockerfile.pipeline
+    container_name: store_intelligence_pipeline
+    depends_on:
+      api:
+        condition: service_healthy
+    environment:
+      API_BASE_URL: "http://api:8000"
+    command:
+      - python
+      - -m
+      - pipeline.run_pipeline
+      - --config
+      - /app/configs/store_layout.json
+      - --api-base-url
+      - http://api:8000
+      - --stream
+      - cam_entrance=mock
+      - --mock
+      - --repeat
+      - --repeat-delay
+      - "10"
+    restart: unless-stopped
+
+  dashboard:
+    build:
+      context: .
+      dockerfile: docker/Dockerfile.dashboard
+    container_name: store_intelligence_dashboard
+    depends_on:
+      api:
+        condition: service_healthy
+    environment:
+      PORT: "3000"
+      BASE_PATH: "/"
+      VITE_API_URL: "http://api:8000"
+    ports:
+      - "3000:3000"
+    restart: unless-stopped
+
+volumes:
+  sqlite_data:
+  # pgdata:

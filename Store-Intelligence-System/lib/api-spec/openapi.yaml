@@ -1,0 +1,681 @@
+openapi: 3.1.0
+info:
+  # Do not change the title, if the title changes, the import paths will be broken
+  title: Api
+  version: 0.1.0
+  description: Store Intelligence System API
+servers:
+  - url: /api
+    description: Base API path
+tags:
+  - name: health
+    description: Health operations
+  - name: events
+    description: Event ingestion
+  - name: stores
+    description: Store metrics and analytics
+paths:
+  /healthz:
+    get:
+      operationId: healthCheck
+      tags: [health]
+      summary: Health check
+      description: Returns server health status
+      responses:
+        "200":
+          description: Healthy
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/HealthStatus"
+
+  /events/ingest:
+    post:
+      operationId: ingestEvent
+      tags: [events]
+      summary: Ingest a visitor event
+      description: Ingest a structured behavioral event from the detection pipeline
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/EventInput"
+      responses:
+        "201":
+          description: Event ingested
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/IngestResponse"
+        "400":
+          description: Invalid event
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/ErrorResponse"
+        "409":
+          description: Duplicate event (idempotent)
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/IngestResponse"
+
+  /events/batch:
+    post:
+      operationId: ingestEventBatch
+      tags: [events]
+      summary: Ingest a batch of events
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/EventBatchInput"
+      responses:
+        "201":
+          description: Batch ingested
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/BatchIngestResponse"
+
+  /stores/{storeId}/metrics:
+    get:
+      operationId: getStoreMetrics
+      tags: [stores]
+      summary: Get real-time store metrics
+      parameters:
+        - name: storeId
+          in: path
+          required: true
+          schema:
+            type: string
+        - name: from
+          in: query
+          schema:
+            type: string
+            description: ISO datetime start
+        - name: to
+          in: query
+          schema:
+            type: string
+            description: ISO datetime end
+      responses:
+        "200":
+          description: Store metrics
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/StoreMetrics"
+
+  /stores/{storeId}/funnel:
+    get:
+      operationId: getStoreFunnel
+      tags: [stores]
+      summary: Get visitor conversion funnel
+      parameters:
+        - name: storeId
+          in: path
+          required: true
+          schema:
+            type: string
+        - name: from
+          in: query
+          schema:
+            type: string
+        - name: to
+          in: query
+          schema:
+            type: string
+      responses:
+        "200":
+          description: Funnel data
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/FunnelData"
+
+  /stores/{storeId}/heatmap:
+    get:
+      operationId: getStoreHeatmap
+      tags: [stores]
+      summary: Get zone dwell heatmap data
+      parameters:
+        - name: storeId
+          in: path
+          required: true
+          schema:
+            type: string
+        - name: from
+          in: query
+          schema:
+            type: string
+        - name: to
+          in: query
+          schema:
+            type: string
+      responses:
+        "200":
+          description: Heatmap data
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/HeatmapData"
+
+  /stores/{storeId}/anomalies:
+    get:
+      operationId: getStoreAnomalies
+      tags: [stores]
+      summary: Get detected anomalies
+      parameters:
+        - name: storeId
+          in: path
+          required: true
+          schema:
+            type: string
+        - name: severity
+          in: query
+          schema:
+            type: string
+            enum: [low, medium, high]
+        - name: resolved
+          in: query
+          schema:
+            type: boolean
+        - name: limit
+          in: query
+          schema:
+            type: integer
+            default: 50
+      responses:
+        "200":
+          description: Anomalies list
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: "#/components/schemas/Anomaly"
+
+  /stores/{storeId}/sessions:
+    get:
+      operationId: getStoreSessions
+      tags: [stores]
+      summary: Get visitor sessions
+      parameters:
+        - name: storeId
+          in: path
+          required: true
+          schema:
+            type: string
+        - name: from
+          in: query
+          schema:
+            type: string
+        - name: to
+          in: query
+          schema:
+            type: string
+        - name: limit
+          in: query
+          schema:
+            type: integer
+            default: 100
+      responses:
+        "200":
+          description: Sessions list
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: "#/components/schemas/VisitorSession"
+
+  /stores/{storeId}/timeline:
+    get:
+      operationId: getStoreTimeline
+      tags: [stores]
+      summary: Get hourly visitor timeline
+      parameters:
+        - name: storeId
+          in: path
+          required: true
+          schema:
+            type: string
+        - name: date
+          in: query
+          schema:
+            type: string
+            description: "Date in YYYY-MM-DD format"
+      responses:
+        "200":
+          description: Timeline data
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: "#/components/schemas/TimelinePoint"
+
+  /stores/{storeId}/summary:
+    get:
+      operationId: getStoreSummary
+      tags: [stores]
+      summary: Get store summary dashboard stats
+      parameters:
+        - name: storeId
+          in: path
+          required: true
+          schema:
+            type: string
+      responses:
+        "200":
+          description: Store summary
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/StoreSummary"
+
+  /stores:
+    get:
+      operationId: listStores
+      tags: [stores]
+      summary: List all stores
+      responses:
+        "200":
+          description: Stores list
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: "#/components/schemas/Store"
+
+components:
+  schemas:
+    HealthStatus:
+      type: object
+      properties:
+        status:
+          type: string
+      required:
+        - status
+
+    ErrorResponse:
+      type: object
+      properties:
+        error:
+          type: string
+      required:
+        - error
+
+    EventInput:
+      type: object
+      required:
+        - event_id
+        - store_id
+        - camera_id
+        - event_type
+        - timestamp
+        - track_id
+      properties:
+        event_id:
+          type: string
+          description: Unique idempotency key
+        store_id:
+          type: string
+        camera_id:
+          type: string
+        event_type:
+          type: string
+          enum: [entry, exit, zone_enter, zone_exit, purchase, queue_join, queue_abandon, staff_detected]
+        timestamp:
+          type: string
+          description: ISO 8601 datetime
+        track_id:
+          type: string
+          description: Tracker-assigned person ID
+        visitor_id:
+          type: ["string", "null"]
+          description: Re-identified visitor ID (post re-entry matching)
+        zone_id:
+          type: ["string", "null"]
+        is_staff:
+          type: boolean
+          default: false
+        confidence:
+          type: number
+          description: Detection confidence 0.0-1.0
+          default: 1.0
+        group_id:
+          type: ["string", "null"]
+          description: Group ID for group entries
+        bbox:
+          $ref: "#/components/schemas/BoundingBox"
+        metadata:
+          type: object
+          additionalProperties: true
+
+    BoundingBox:
+      type: object
+      properties:
+        x:
+          type: number
+        y:
+          type: number
+        w:
+          type: number
+        h:
+          type: number
+
+    EventBatchInput:
+      type: object
+      required:
+        - events
+      properties:
+        events:
+          type: array
+          items:
+            $ref: "#/components/schemas/EventInput"
+
+    IngestResponse:
+      type: object
+      properties:
+        event_id:
+          type: string
+        status:
+          type: string
+          enum: [created, duplicate]
+        anomalies_triggered:
+          type: array
+          items:
+            type: string
+      required:
+        - event_id
+        - status
+        - anomalies_triggered
+
+    BatchIngestResponse:
+      type: object
+      properties:
+        total:
+          type: integer
+        created:
+          type: integer
+        duplicates:
+          type: integer
+        errors:
+          type: integer
+        anomalies_triggered:
+          type: array
+          items:
+            type: string
+      required:
+        - total
+        - created
+        - duplicates
+        - errors
+        - anomalies_triggered
+
+    StoreMetrics:
+      type: object
+      properties:
+        store_id:
+          type: string
+        period_start:
+          type: string
+        period_end:
+          type: string
+        unique_visitors:
+          type: integer
+        total_entries:
+          type: integer
+        total_exits:
+          type: integer
+        staff_count:
+          type: integer
+        conversion_rate:
+          type: number
+        avg_dwell_time_seconds:
+          type: number
+        abandonment_rate:
+          type: number
+        current_occupancy:
+          type: integer
+        peak_occupancy:
+          type: integer
+        queue_depth:
+          type: integer
+        re_entry_count:
+          type: integer
+      required:
+        - store_id
+        - unique_visitors
+        - total_entries
+        - conversion_rate
+        - avg_dwell_time_seconds
+        - abandonment_rate
+        - current_occupancy
+        - queue_depth
+
+    FunnelData:
+      type: object
+      properties:
+        store_id:
+          type: string
+        stages:
+          type: array
+          items:
+            $ref: "#/components/schemas/FunnelStage"
+      required:
+        - store_id
+        - stages
+
+    FunnelStage:
+      type: object
+      properties:
+        stage:
+          type: string
+        count:
+          type: integer
+        drop_off:
+          type: number
+          description: Percentage who dropped off at this stage
+        avg_time_in_stage_seconds:
+          type: ["number", "null"]
+      required:
+        - stage
+        - count
+        - drop_off
+
+    HeatmapData:
+      type: object
+      properties:
+        store_id:
+          type: string
+        zones:
+          type: array
+          items:
+            $ref: "#/components/schemas/ZoneHeat"
+      required:
+        - store_id
+        - zones
+
+    ZoneHeat:
+      type: object
+      properties:
+        zone_id:
+          type: string
+        zone_name:
+          type: string
+        total_dwell_seconds:
+          type: number
+        visitor_count:
+          type: integer
+        avg_dwell_seconds:
+          type: number
+        intensity:
+          type: number
+          description: Normalized 0.0-1.0
+        is_dead_zone:
+          type: boolean
+      required:
+        - zone_id
+        - zone_name
+        - total_dwell_seconds
+        - visitor_count
+        - avg_dwell_seconds
+        - intensity
+        - is_dead_zone
+
+    Anomaly:
+      type: object
+      properties:
+        id:
+          type: string
+        store_id:
+          type: string
+        anomaly_type:
+          type: string
+          enum: [queue_spike, conversion_drop, dead_zone, high_abandonment, unusual_traffic]
+        severity:
+          type: string
+          enum: [low, medium, high]
+        detected_at:
+          type: string
+        description:
+          type: string
+        suggested_action:
+          type: string
+        metric_value:
+          type: number
+        threshold_value:
+          type: number
+        resolved:
+          type: boolean
+        zone_id:
+          type: ["string", "null"]
+      required:
+        - id
+        - store_id
+        - anomaly_type
+        - severity
+        - detected_at
+        - description
+        - suggested_action
+        - resolved
+
+    VisitorSession:
+      type: object
+      properties:
+        session_id:
+          type: string
+        visitor_id:
+          type: string
+        store_id:
+          type: string
+        entry_time:
+          type: string
+        exit_time:
+          type: ["string", "null"]
+        dwell_seconds:
+          type: ["number", "null"]
+        zones_visited:
+          type: array
+          items:
+            type: string
+        is_converted:
+          type: boolean
+        is_staff:
+          type: boolean
+        re_entry_number:
+          type: integer
+        track_ids:
+          type: array
+          items:
+            type: string
+      required:
+        - session_id
+        - visitor_id
+        - store_id
+        - entry_time
+        - is_converted
+        - is_staff
+        - re_entry_number
+
+    TimelinePoint:
+      type: object
+      properties:
+        hour:
+          type: string
+        entries:
+          type: integer
+        exits:
+          type: integer
+        occupancy:
+          type: integer
+        conversions:
+          type: integer
+      required:
+        - hour
+        - entries
+        - exits
+        - occupancy
+        - conversions
+
+    StoreSummary:
+      type: object
+      properties:
+        store_id:
+          type: string
+        store_name:
+          type: string
+        today_visitors:
+          type: integer
+        today_conversions:
+          type: integer
+        conversion_rate:
+          type: number
+        avg_dwell_seconds:
+          type: number
+        current_occupancy:
+          type: integer
+        active_anomalies:
+          type: integer
+        queue_depth:
+          type: integer
+        vs_yesterday_visitors:
+          type: number
+          description: Percentage change vs yesterday
+        vs_7day_conversion:
+          type: number
+          description: Conversion rate vs 7-day avg
+      required:
+        - store_id
+        - store_name
+        - today_visitors
+        - today_conversions
+        - conversion_rate
+        - avg_dwell_seconds
+        - current_occupancy
+        - active_anomalies
+        - queue_depth
+
+    Store:
+      type: object
+      properties:
+        id:
+          type: string
+        name:
+          type: string
+        location:
+          type: string
+        camera_count:
+          type: integer
+        is_active:
+          type: boolean
+      required:
+        - id
+        - name
+        - is_active

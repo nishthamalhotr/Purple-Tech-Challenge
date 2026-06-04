@@ -1,0 +1,2 @@
+- [Store Intelligence architecture](store-intelligence-arch.md) — event_id idempotency, staff exclusion via is_staff flag, threshold-based anomaly detection
+- [Orval barrel collision fix](orval-barrel-fix.md) — removed schemas export from orval.config.ts; added sed post-codegen step
